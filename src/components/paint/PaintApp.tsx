@@ -7,7 +7,11 @@ import {
   Film, Lock, Unlock, RotateCw, ImagePlus, Camera, Share2, Settings,
   HelpCircle, Clipboard, ChevronLeft, Pointer, Navigation, ClipboardPaste, Shapes, Grid2X2, ChevronRight,
 } from 'lucide-react';
+import { installSuppliedLibrary } from './supplied-library';
 import { applyCanvasEffect, applyLiquify, drawGeometry, floodFill, type LiquifyMode } from './canvas-ops';
+
+// bundled MyPaint / Deevad / JSON brush packs, sorted into library categories
+if (typeof window !== 'undefined') installSuppliedLibrary();
 
 type Layer = { id: string; name: string; visible: boolean; locked?: boolean; image?: string };
 type AnimationFrame = { id: string; images: Record<string, string>; hold: number; background: boolean };
