@@ -455,6 +455,9 @@ export function LayersBar({ layers, activeId, version, background, backgroundVis
           bottom: isBottom ? 14 : 'auto',
         }
     : { right: 14, top: 14 };
+  // scale from the seated corner so pinch-resizing / compact folding never pushes the
+  // bar (or its hit box) off-screen or away from its edge; free drags scale from top-left
+  style.transformOrigin = pos && dragging ? '0 0' : `${isBottom ? 'bottom' : 'top'} ${isRight ? 'right' : 'left'}`;
 
   const blendLabel = (m: string) => blendModes.find((b) => b.mode === m)?.label ?? 'Normal';
   const openOptions = (l: LayerState, el: HTMLElement) => {
@@ -467,7 +470,7 @@ export function LayersBar({ layers, activeId, version, background, backgroundVis
     setOptions(l.id);
   };
 
-  usePinchScale(rootRef, 'pp.lbScale', '0 0', () => {
+  usePinchScale(rootRef, 'pp.lbScale', '', () => {
     const p = posRef.current ?? defaultPos();
     const bounded = clamp(p.x, p.y);
     setPos({ ...p, ...bounded });

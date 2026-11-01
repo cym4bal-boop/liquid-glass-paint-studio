@@ -154,7 +154,7 @@ export function usePinchScale(ref: RefObject<HTMLElement | null>, key: string, o
       const el = ref.current;
       if (!el) return;
       el.style.scale = String(scale.current);
-      el.style.transformOrigin = origin;
+      if (origin) el.style.transformOrigin = origin;
     };
     apply();
     const pts = new Map<number, { x: number; y: number }>();
