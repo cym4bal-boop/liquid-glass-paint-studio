@@ -295,6 +295,10 @@ export function Editor({ artwork, onExit, onSaved }: { artwork: Artwork; onExit:
   const [adjust, setAdjust] = useState<null | { name: string; value: number; base: HTMLCanvasElement; layerId: string }>(null);
   const [liq, setLiq] = useStored<LiqSettings>('pp.liq', LIQ_DEFAULT);
   const [dropThreshold, setDropThreshold] = useStored('pp.dropThreshold', 34);
+  const [dropSliding, setDropSliding] = useState(false);
+  const [dropLive, setDropLive] = useState<number | null>(null);
+  const dropRef = useRef(drop); dropRef.current = drop;
+  const dropGesture = useRef<{ pts: Map<number, { x: number; y: number }>; panning: boolean; moved: boolean; pan: null | { c0: { x: number; y: number }; d0: number; v0: View; n: number }; startX: number; startY: number; startT: number; raf: number; pending: number | null }>({ pts: new Map(), panning: false, moved: false, pan: null, startX: 0, startY: 0, startT: 0, raf: 0, pending: null });
   const [clipMenu, setClipMenu] = useState(false); // three-finger swipe down: cut / copy / paste
   const [tf, setTfState] = useState<Tf>({ tx: 0, ty: 0, scale: 1, rot: 0, fx: 1, fy: 1 });
   const [tfMode, setTfMode] = useState<'Freeform' | 'Uniform'>('Uniform');
@@ -2154,30 +2158,78 @@ export function Editor({ artwork, onExit, onSaved }: { artwork: Artwork; onExit:
         <div
           className="pp-drop-capture"
           onPointerDown={(e) => {
-            const startX = e.clientX, startY = e.clientY, startT = drop.threshold;
-            let moved = false;
-            (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
             const el = e.currentTarget as HTMLElement;
+            el.setPointerCapture(e.pointerId);
+            const st = dropGesture.current;
+            st.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (st.pts.size >= 2 || e.button === 1 || spaceDown.current) {
+              // second finger (or middle mouse / space): pan & zoom the canvas, never adjust
+              st.panning = true; st.moved = true; setDropSliding(false);
+              const pts = [...st.pts.values()];
+              const c = pts.length >= 2 ? { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 } : pts[0];
+              const d = pts.length >= 2 ? Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y) : 0;
+              st.pan = { c0: c, d0: d, v0: { ...view.current }, n: pts.length };
+              return;
+            }
+            if (st.pts.size > 1) return;
+            st.panning = false; st.moved = false;
+            const startX = e.clientX, startY = e.clientY, startT = drop.threshold;
+            st.startX = startX; st.startY = startY; st.startT = startT;
             const move = (ev: PointerEvent) => {
+              if (!st.pts.has(ev.pointerId)) return;
+              st.pts.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+              if (st.panning && st.pan) {
+                const pts = [...st.pts.values()];
+                if (pts.length !== st.pan.n) { const c = pts.length >= 2 ? { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 } : pts[0]; st.pan = { c0: c, d0: pts.length >= 2 ? Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y) : 0, v0: { ...view.current }, n: pts.length }; return; }
+                const c = pts.length >= 2 ? { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 } : pts[0];
+                const v0 = st.pan.v0;
+                const k = pts.length >= 2 && st.pan.d0 > 10 ? Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y) / st.pan.d0 : 1;
+                const scale = Math.max(0.02, Math.min(64, v0.scale * k));
+                const r = viewCanvas.current!.getBoundingClientRect();
+                const ax = st.pan.c0.x - r.left, ay = st.pan.c0.y - r.top;
+                const kk = scale / v0.scale;
+                view.current = { ...v0, scale, x: c.x - r.left - (ax - v0.x) * kk, y: c.y - r.top - (ay - v0.y) * kk };
+                requestRender();
+                return;
+              }
               const dx = ev.clientX - startX;
-              if (!moved && Math.abs(dx) > 6) { moved = true; }
-              if (!moved) return;
-              const t = Math.max(0, Math.min(100, Math.round(startT + dx / 3)));
-              if (t !== drop.threshold) redoDrop(t);
+              if (!st.moved && Math.abs(dx) > 6) { st.moved = true; setDropSliding(true); }
+              if (!st.moved) return;
+              // fractional preview value for the bar, fills coalesced to one per frame
+              const tf = Math.max(0, Math.min(100, startT + (dx - Math.sign(dx) * 6) / 4));
+              setDropLive(tf);
+              const t = Math.round(tf);
+              st.pending = t;
+              if (!st.raf) st.raf = requestAnimationFrame(() => {
+                st.raf = 0;
+                if (st.pending != null && st.pending !== dropRef.current?.threshold) redoDrop(st.pending);
+                st.pending = null;
+              });
             };
-            const up = () => {
+            const up = (ev: PointerEvent) => {
+              st.pts.delete(ev.pointerId);
+              if (st.pts.size > 0) return;
               el.removeEventListener('pointermove', move);
               el.removeEventListener('pointerup', up);
-              setDropSliding(false);
-              if (moved) return;
+              el.removeEventListener('pointercancel', up);
+              setDropSliding(false); setDropLive(null);
+              const wasPan = st.panning; st.panning = false; st.pan = null;
+              if (st.moved || wasPan) return;
               if (drop.continuing) doColorDrop(startX, startY, drop.color, drop.threshold, true);
               else setDrop(null);
             };
             el.addEventListener('pointermove', move);
             el.addEventListener('pointerup', up);
+            el.addEventListener('pointercancel', up);
           }}
         >
-          {/* threshold bar removed — slide still adjusts invisibly */}
+          {dropSliding && (
+            <div className="pp-drop-threshold" role="slider" aria-label="ColorDrop Threshold" aria-valuenow={Math.round(dropLive ?? drop.threshold)} aria-valuemin={0} aria-valuemax={100}>
+              <div className="pp-drop-fill" style={{ width: `${dropLive ?? drop.threshold}%` }} />
+              <span>ColorDrop Threshold</span>
+              <b>{Math.round(dropLive ?? drop.threshold)}%</b>
+            </div>
+          )}
         </div>
       )}
       {!hideUI && drop && (
