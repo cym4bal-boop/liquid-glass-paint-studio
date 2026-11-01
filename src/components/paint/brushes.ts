@@ -189,17 +189,17 @@ const defaultLibrary: BrushDef[] = [
   { ...base, id: 'chisel-nib', name: 'Chisel Nib', category: 'Calligraphy', spacing: 0.02, hardness: 1, flow: 1, sizePressure: 0.2, roundness: 0.15, angle: 45, maxSize: 75 },
 
   // Deevad Digital (Translated & Calibrated from Deevad bundle)
-  { ...base, id: 'deevad-brush-pointy', name: 'Deevad Thin Pointy', category: 'Deevad', spacing: 0.04, hardness: 0.9, flow: 0.95, sizePressure: 0.85, grain: 0.15, taper: 0.6, maxSize: 65, author: 'David Revoy' },
-  { ...base, id: 'deevad-pencil-2b', name: 'Deevad Pencil 2B', category: 'Deevad', spacing: 0.08, hardness: 0.72, flow: 0.65, sizePressure: 0.5, grain: 0.7, taper: 0.4, maxSize: 32, author: 'David Revoy' },
-  { ...base, id: 'deevad-bristles-lineart', name: 'Deevad Bristles Lineart', category: 'Deevad', spacing: 0.04, hardness: 0.88, flow: 0.9, sizePressure: 0.7, roundness: 0.6, angle: 25, grain: 0.35, maxSize: 75, author: 'David Revoy' },
-  { ...base, id: 'deevad-painterly', name: 'Deevad Painterly Brush', category: 'Deevad', spacing: 0.035, hardness: 0.82, flow: 0.8, sizePressure: 0.6, grain: 0.4, roundness: 0.5, angle: -20, maxSize: 130, pull: 0.5, author: 'David Revoy' },
-  { ...base, id: 'deevad-airbrush', name: 'Deevad Smooth Airbrush', category: 'Deevad', spacing: 0.05, hardness: 0.1, flow: 0.16, sizePressure: 0.1, opacityPressure: 0.65, maxSize: 240, author: 'David Revoy' },
+  { ...base, id: 'deevad-brush-pointy', name: 'Deevad Thin Pointy', category: 'Inks', spacing: 0.04, hardness: 0.9, flow: 0.95, sizePressure: 0.85, grain: 0.15, taper: 0.6, maxSize: 65, author: 'David Revoy' },
+  { ...base, id: 'deevad-pencil-2b', name: 'Deevad Pencil 2B', category: 'Sketching', spacing: 0.08, hardness: 0.72, flow: 0.65, sizePressure: 0.5, grain: 0.7, taper: 0.4, maxSize: 32, author: 'David Revoy' },
+  { ...base, id: 'deevad-bristles-lineart', name: 'Deevad Bristles Lineart', category: 'Inks', spacing: 0.04, hardness: 0.88, flow: 0.9, sizePressure: 0.7, roundness: 0.6, angle: 25, grain: 0.35, maxSize: 75, author: 'David Revoy' },
+  { ...base, id: 'deevad-painterly', name: 'Deevad Painterly Brush', category: 'Paints', spacing: 0.035, hardness: 0.82, flow: 0.8, sizePressure: 0.6, grain: 0.4, roundness: 0.5, angle: -20, maxSize: 130, pull: 0.5, author: 'David Revoy' },
+  { ...base, id: 'deevad-airbrush', name: 'Deevad Smooth Airbrush', category: 'Airbrushing', spacing: 0.05, hardness: 0.1, flow: 0.16, sizePressure: 0.1, opacityPressure: 0.65, maxSize: 240, author: 'David Revoy' },
 
   // MyPaint Classic (Translated from MyPaint pack)
-  { ...base, id: 'mypaint-calligraphy', name: 'MyPaint Calligraphy', category: 'MyPaint', spacing: 0.03, hardness: 0.92, flow: 0.95, sizePressure: 0.7, roundness: 0.25, angle: 45, maxSize: 70 },
-  { ...base, id: 'mypaint-dry-brush', name: 'MyPaint Dry Brush', category: 'MyPaint', spacing: 0.06, hardness: 0.75, flow: 0.7, sizePressure: 0.5, grain: 0.6, rotateRandom: true, maxSize: 90 },
-  { ...base, id: 'mypaint-coarse-bulk', name: 'MyPaint Coarse Bulk', category: 'MyPaint', spacing: 0.05, hardness: 0.7, flow: 0.8, roundness: 0.6, angle: 30, grain: 0.5, maxSize: 140 },
-  { ...base, id: 'mypaint-blending-knife', name: 'MyPaint Blending Knife', category: 'MyPaint', spacing: 0.04, hardness: 0.85, flow: 0.6, roundness: 0.3, angle: -45, pull: 0.7, smudge: 0.8, maxSize: 120 },
+  { ...base, id: 'mypaint-calligraphy', name: 'MyPaint Calligraphy', category: 'Calligraphy', spacing: 0.03, hardness: 0.92, flow: 0.95, sizePressure: 0.7, roundness: 0.25, angle: 45, maxSize: 70 },
+  { ...base, id: 'mypaint-dry-brush', name: 'MyPaint Dry Brush', category: 'Paints', spacing: 0.06, hardness: 0.75, flow: 0.7, sizePressure: 0.5, grain: 0.6, rotateRandom: true, maxSize: 90 },
+  { ...base, id: 'mypaint-coarse-bulk', name: 'MyPaint Coarse Bulk', category: 'Oils', spacing: 0.05, hardness: 0.7, flow: 0.8, roundness: 0.6, angle: 30, grain: 0.5, maxSize: 140 },
+  { ...base, id: 'mypaint-blending-knife', name: 'MyPaint Blending Knife', category: 'Blending', spacing: 0.04, hardness: 0.85, flow: 0.6, roundness: 0.3, angle: -45, pull: 0.7, smudge: 0.8, maxSize: 120 },
 ];
 
 function loadSavedCustomBrushes(): BrushDef[] {
@@ -213,11 +213,18 @@ function loadSavedCustomBrushes(): BrushDef[] {
   }
 }
 
-export const brushLibrary: BrushDef[] = [...defaultLibrary, ...loadSavedCustomBrushes()];
+const savedCustom = loadSavedCustomBrushes().map((b) => {
+  // older builds filed brushes under pack names; move them into real categories
+  if (b.category === 'Deevad' || b.category === 'MyPaint') return { ...b, category: 'Custom' };
+  return b;
+});
+export const brushLibrary: BrushDef[] = [...defaultLibrary, ...savedCustom];
+/** Bundled preset ids that are untouched — never written to storage (re-installed each launch). */
+export const pristineSupplied = new Set<string>();
 
 export function saveCustomBrushes() {
   try {
-    const custom = brushLibrary.filter((b) => !defaultLibrary.some((d) => d.id === b.id) || b.id.startsWith('custom-'));
+    const custom = brushLibrary.filter((b) => !pristineSupplied.has(b.id) && (!defaultLibrary.some((d) => d.id === b.id) || b.id.startsWith('custom-')));
     localStorage.setItem('pp.customBrushes', JSON.stringify(custom));
   } catch {
     // Ignore storage quota
@@ -243,6 +250,7 @@ export function getBrushDef(id: string): BrushDef {
 }
 
 export function updateBrushDef(brush: BrushDef) {
+  pristineSupplied.delete(brush.id);
   const idx = brushLibrary.findIndex((b) => b.id === brush.id);
   if (idx >= 0) {
     brushLibrary[idx] = { ...brush };
@@ -268,7 +276,8 @@ export function resetBrushDef(id: string): BrushDef | null {
 
 export const brushCategories = [
   'Pens', 'Inks', 'Markers', 'Pastels', 'Oils', 'Paints', 'Gouache', 'Sketching',
-  'Airbrushing', 'Charcoals', 'Spraypaints', 'Calligraphy', 'Deevad', 'MyPaint', 'Imported'
+  'Airbrushing', 'Charcoals', 'Spraypaints', 'Calligraphy', 'Watercolor', 'Blending', 'Erasers',
+  'Textures', 'Elements', 'Custom', 'Imported'
 ];
 
 export function brushesInCategory(category: string) {
