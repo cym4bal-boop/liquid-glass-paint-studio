@@ -20,14 +20,14 @@ const RULES: [RegExp, string][] = [
   [/charcoal/, 'Charcoals'],
   [/chalk|pastel|crayon|waxy/, 'Pastels'],
   [/marker|highlighter|felt/, 'Markers'],
-  [/airbrush|airbruch|airsmudge|glow|bokeh|beamlight|soft$|smoke|cloud/, 'Airbrushing'],
+  [/airbrush|airbruch|airsmudge|glow|bokeh|beamlight|soft$|irregular|smoke|cloud/, 'Airbrushing'],
   [/spray|splatter|splash|backsplash|sand.?blast|blot|drip|stains?|particul|stardust|sparkler|flecks|debris/, 'Spraypaints'],
   [/gouache/, 'Gouache'],
   [/oil|acrylic|impasto|filbert|thick|rake|palette.?knife|loaded.?knife|^knife|bulk|modelling|roller|stucco|varnish|glazed/, 'Oils'],
-  [/ink|inker|liner|pen|ballpen|pixel|monoline|1pixel|rigger|pointy|kabura|signature|gel|technical/, 'Inks'],
+  [/ink|inker|liner|pen|ballpen|pixel|monoline|1pixel|rigger|pointy|kabura|signature|gel|technical|sting|delayed|taper/, 'Inks'],
   [/grid|halftone|screentone|tone|dot|dash|lines|checker|squares|circles|bricks|wood|denim|cordaroy|cloth|fiber|grunge|texture|noise|grain|scratch|newspaper|dirty|sponge|pebbles|cut.?out|cracked|chemical|burn|combustion|raised/, 'Textures'],
-  [/grass|leaves|fur|hair|vine|willow|floral|roses|pistil|stars|arrow|ribbon|tube|twisty|flame|chain|sewing|track|dna|bubble|meat|curvy|doodle|scribble|wet.?direction/, 'Elements'],
-  [/paint|brush|round|flat|bar|detail|impression|puant|fill|bristle|dry|basic|rough|classic|wet/, 'Paints'],
+  [/grass|leaves|fur|hair|vine|willow|floral|roses|pistil|stars|arrow|ribbon|tube|twisty|flame|chain|sewing|track|dna|bubble|meat|savory|curvy|doodle|scribble|wet.?direction/, 'Elements'],
+  [/paint|brush|round|flat|bar|detail|impression|puant|fill|bristle|dry|basic|rough|classic|wet|opaque/, 'Paints'],
 ];
 
 /** Sorts a bundled brush into a real library category by its name. */
