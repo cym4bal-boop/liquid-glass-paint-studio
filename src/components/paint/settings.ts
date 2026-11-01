@@ -65,6 +65,8 @@ export type Prefs = {
   showLayerChanges: boolean;
   // ColorDrop: off = plain flood fill, no edge/gap detection
   edgeDetect: boolean;
+  /** Layer-name marquee speed in px/s; 0 turns scrolling off. */
+  layerNameSpeed: number;
   // saving
   savePrompt: boolean;
   historyLimit: number; // max undo steps kept per canvas
@@ -93,6 +95,7 @@ export const DEFAULT_PREFS: Prefs = {
   rotateCanvas: true,
   showLayerChanges: true,
   edgeDetect: true,
+  layerNameSpeed: 30,
   savePrompt: false,
   historyLimit: 10000,
   timelapse: true,
@@ -112,6 +115,7 @@ export function readPrefs(): Prefs {
 export function writePrefs(patch: Partial<Prefs>): Prefs {
   const next = { ...readPrefs(), ...patch };
   try { localStorage.setItem(PREFS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  try { window.dispatchEvent(new Event('pp-prefs')); } catch { /* ignore */ }
   return next;
 }
 
@@ -120,6 +124,7 @@ export function resetPrefs(patch: (keyof Prefs)[]): Prefs {
   const next = { ...keep };
   for (const k of patch) (next as Record<string, unknown>)[k] = DEFAULT_PREFS[k];
   try { localStorage.setItem(PREFS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  try { window.dispatchEvent(new Event('pp-prefs')); } catch { /* ignore */ }
   return next;
 }
 

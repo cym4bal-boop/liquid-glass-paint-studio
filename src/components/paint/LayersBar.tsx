@@ -10,6 +10,35 @@ import { adjustmentList, adjustShort } from './Panels';
 import { textures } from './textures';
 import { cornerSnap } from './docking';
 import { constrainWindow } from './window-bounds';
+import { readPrefs } from './settings';
+
+/** Layer name that scrolls back and forth when it's too long to fit (speed from settings). */
+function MarqueeName({ text }: { text: string }) {
+  const box = useRef<HTMLSpanElement>(null);
+  const inner = useRef<HTMLSpanElement>(null);
+  const [speed, setSpeed] = useState(() => readPrefs().layerNameSpeed ?? 30);
+  const [over, setOver] = useState(0);
+  useEffect(() => {
+    const on = () => setSpeed(readPrefs().layerNameSpeed ?? 30);
+    window.addEventListener('pp-prefs', on);
+    return () => window.removeEventListener('pp-prefs', on);
+  }, []);
+  useEffect(() => {
+    const b = box.current, i = inner.current;
+    if (!b || !i) return;
+    const measure = () => setOver(Math.max(0, Math.ceil(i.scrollWidth - b.clientWidth)));
+    measure();
+    const ro = new ResizeObserver(measure); ro.observe(b); ro.observe(i);
+    return () => ro.disconnect();
+  }, [text]);
+  const run = over > 2 && speed > 0;
+  const dur = run ? Math.max(1.5, (over * 2) / speed + 2.4) : 0;
+  return (
+    <span ref={box} className={`pp-marquee ${run ? 'run' : ''}`}>
+      <span ref={inner} className="pp-marquee-inner" style={run ? { ['--pp-mq' as string]: `-${over}px`, animationDuration: `${dur}s` } : undefined}>{text}</span>
+    </span>
+  );
+}
 
 /* Procreate-style layers panel: a compact second toolbar that opens from the
  * Layers button. It shows only the add-layer button on top, the layers and the
@@ -540,7 +569,7 @@ export function LayersBar({ layers, activeId, version, background, backgroundVis
                     ) : (
                       <Button variant="paint" size="paint" type="button" className="pp-lb-name" aria-label={`Rename ${l.name}`}
                         onClick={(e) => { e.stopPropagation(); if (suppressClick.current) return; setNameDraft(l.name); setRenaming(l.id); }}>
-                        {l.name}
+                        <MarqueeName text={l.name} />
                         {l.kind === 'adjust' && <small> · {Math.round(l.adjust?.value ?? 0)}%</small>}
                         {l.kind === 'group' && l.blend !== 'source-over' && <small> · {blendModes.find((b) => b.mode === l.blend)?.short}</small>}
                         {l.locked && <small> · Locked</small>}

@@ -1,10 +1,10 @@
 /* Canvas-only settings (Actions → Prefs inside a canvas): rendering, workflow and
  * brush behaviour. Each section has its own reset, plus one for everything. */
-import { CurveGraph, PrefCycle, PrefSection, PrefToggle, ResetButton } from './PrefsUI';
+import { CurveGraph, PrefCycle, PrefSection, PrefSlider, PrefToggle, ResetButton } from './PrefsUI';
 import { resetPrefs, writePrefs, type Prefs } from './settings';
 
 const RENDER: (keyof Prefs)[] = ['lowLatency', 'colorMode', 'gamma', 'deepColor'];
-const WORKFLOW: (keyof Prefs)[] = ['rotateCanvas', 'showLayerChanges', 'edgeDetect'];
+const WORKFLOW: (keyof Prefs)[] = ['rotateCanvas', 'showLayerChanges', 'edgeDetect', 'layerNameSpeed'];
 const BRUSH: (keyof Prefs)[] = ['drawCursor', 'shapeDetection', 'curvePressure', 'curveVelocity', 'curveTilt'];
 
 export function CanvasPrefs({ prefs, onPrefs }: { prefs: Prefs; onPrefs: (p: Prefs) => void }) {
@@ -22,6 +22,7 @@ export function CanvasPrefs({ prefs, onPrefs }: { prefs: Prefs; onPrefs: (p: Pre
         <PrefToggle label="Rotate canvas" on={prefs.rotateCanvas} onChange={(v) => set({ rotateCanvas: v })} />
         <PrefToggle label="Show layer changes" on={prefs.showLayerChanges} onChange={(v) => set({ showLayerChanges: v })} />
         <PrefToggle label="ColorDrop edge detection" on={prefs.edgeDetect} onChange={(v) => set({ edgeDetect: v })} />
+        <PrefSlider label="Layer name scroll speed" value={prefs.layerNameSpeed} min={0} max={120} onChange={(v) => set({ layerNameSpeed: v })} />
         <ResetButton label="Reset workflow" onReset={() => onPrefs(resetPrefs(WORKFLOW))} />
       </PrefSection>
       <PrefSection label="Brush settings">
