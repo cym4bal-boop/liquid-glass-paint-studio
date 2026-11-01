@@ -28,6 +28,8 @@ export type BrushDef = {
   taperTip?: 'sharp' | 'round';
 
   // 4. Shape
+  /** Custom brush head (shape) image as a data URL; dark or opaque pixels paint. */
+  tipImage?: string;
   hardness: number; // 0 soft – 1 hard
   roundness: number; // 1 round, <1 flattened
   angle: number; // tip angle in degrees
@@ -293,14 +295,56 @@ function seeded(seed: number) {
   return () => ((s = (s * 16807) % 2147483647) / 2147483647);
 }
 
+const headImages = new Map<string, HTMLImageElement>();
+const headKey = (src?: string) => (src ? `${src.length}:${src.slice(-24)}` : '');
+/** Loads a custom head image; resolves once it can be stamped. */
+export function loadBrushHead(src: string): Promise<void> {
+  const k = headKey(src);
+  const have = headImages.get(k);
+  if (have?.complete && have.naturalWidth) return Promise.resolve();
+  return new Promise((res) => {
+    const img = have ?? new Image();
+    img.onload = () => { shapeCache.clear(); tintCache.clear(); res(); };
+    img.onerror = () => res();
+    if (!have) { img.src = src; headImages.set(k, img); }
+  });
+}
+
+function drawHead(ctx: CanvasRenderingContext2D, img: HTMLImageElement, px: number) {
+  const s = Math.min(px / img.naturalWidth, px / img.naturalHeight);
+  const w = img.naturalWidth * s, h = img.naturalHeight * s;
+  ctx.drawImage(img, (px - w) / 2, (px - h) / 2, w, h);
+  const data = ctx.getImageData(0, 0, px, px);
+  const d = data.data;
+  let transparent = false;
+  for (let i = 3; i < d.length; i += 16) if (d[i]! < 250) { transparent = true; break; }
+  for (let i = 0; i < d.length; i += 4) {
+    const lum = (d[i]! * 0.299 + d[i + 1]! * 0.587 + d[i + 2]! * 0.114) / 255;
+    // transparent PNGs use their alpha; flat images paint where they're dark
+    const a = transparent ? d[i + 3]! : Math.round((1 - lum) * 255);
+    d[i] = d[i + 1] = d[i + 2] = 255; d[i + 3] = a;
+  }
+  ctx.putImageData(data, 0, 0);
+}
+
 function tipShape(brush: BrushDef, px = TIP) {
-  const key = `${brush.id}@${px}:${brush.hardness}:${brush.roundness}:${brush.angle}:${brush.grain}`;
+  const key = `${brush.id}@${px}:${brush.hardness}:${brush.roundness}:${brush.angle}:${brush.grain}:${headKey(brush.tipImage)}`;
   const cached = shapeCache.get(key);
   if (cached) return cached;
   const c = document.createElement('canvas');
   c.width = c.height = px;
   const ctx = c.getContext('2d')!;
   const r = px / 2;
+  const head = brush.tipImage ? headImages.get(headKey(brush.tipImage)) : undefined;
+  if (brush.tipImage && !head) void loadBrushHead(brush.tipImage);
+  if (head?.complete && head.naturalWidth) {
+    ctx.save();
+    ctx.translate(r, r); ctx.rotate((brush.angle * Math.PI) / 180); ctx.scale(1, brush.roundness); ctx.translate(-r, -r);
+    const tmp = document.createElement('canvas'); tmp.width = tmp.height = px;
+    drawHead(tmp.getContext('2d', { willReadFrequently: true })!, head, px);
+    ctx.drawImage(tmp, 0, 0);
+    ctx.restore();
+  } else {
   const g = ctx.createRadialGradient(r, r, 0, r, r, r);
   const solid = Math.max(0, Math.min(0.98, brush.hardness));
   g.addColorStop(0, 'rgba(255,255,255,1)');
@@ -317,6 +361,7 @@ function tipShape(brush: BrushDef, px = TIP) {
   ctx.arc(r, r, r, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
+  }
 
   if (brush.grain > 0) {
     const img = ctx.getImageData(0, 0, px, px);
@@ -334,7 +379,7 @@ function tipShape(brush: BrushDef, px = TIP) {
 
 /** Tinted brush tip. `px` renders the tip natively at that diameter (0 = default 128). */
 export function brushTip(brush: BrushDef, color: string, px = TIP) {
-  const key = `${brush.id}|${color}|${px}|${brush.hardness}|${brush.roundness}|${brush.angle}|${brush.grain}`;
+  const key = `${brush.id}|${color}|${px}|${brush.hardness}|${brush.roundness}|${brush.angle}|${brush.grain}|${headKey(brush.tipImage)}`;
   const cached = tintCache.get(key);
   if (cached) return cached;
   const c = document.createElement('canvas');
