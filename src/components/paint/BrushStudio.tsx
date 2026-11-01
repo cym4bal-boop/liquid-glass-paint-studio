@@ -4,14 +4,13 @@
  * settings rows below. */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  X, Check, RotateCcw, Download
+  X, Check, RotateCcw, Download, ImagePlus, CircleDot, Save, Copy, Trash2
 } from 'lucide-react';
 import {
-  brushTip, stampDab, drawBrushPreview, resetBrushDef,
+  brushTip, stampDab, drawBrushPreview, resetBrushDef, loadBrushHead,
   type BrushDef
 } from './brushes';
 import { Button } from '@/components/ui/button';
-import { editableBrushCopy } from './brush-edit';
 import { exportBrushToApb } from './brush-translator';
 
 function StrokePathIcon({ size = 20 }: { size?: number }) {
@@ -187,6 +186,9 @@ export function BrushStudio({ brush, onSave, onClose }: { brush: BrushDef; onSav
   const [showSheet, setShowSheet] = useState(false);
   const [touchMode, setTouchMode] = useState(true);
   const [headVer, setHeadVer] = useState(0);
+  const [confirmExit, setConfirmExit] = useState(false);
+  const headInput = useRef<HTMLInputElement>(null);
+  const dirty = JSON.stringify(b) !== JSON.stringify(brush);
 
   const padCanvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
@@ -205,6 +207,57 @@ export function BrushStudio({ brush, onSave, onClose }: { brush: BrushDef; onSav
       if (ctx) { ctx.clearRect(0, 0, 48, 48); const tip = brushTip(b, padColor, 40); ctx.drawImage(tip, 4, 4, 40, 40); }
     }
   }, [b, padColor, headVer]);
+
+  /** Live preview: the pad redraws a sample stroke every time a setting changes. */
+  const drawSample = useCallback(() => {
+    const cvs = padCanvasRef.current;
+    const ctx = cvs?.getContext('2d');
+    if (!cvs || !ctx) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const w = cvs.width / dpr, h = cvs.height / dpr;
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cvs.width, cvs.height); ctx.restore();
+    const tip = brushTip(b, padColor);
+    const size = Math.min(h * 0.5, b.maxSize * (b.previewSize || 0.5));
+    const step = Math.max(0.8, size * Math.max(0.01, b.spacing || 0.05));
+    let prev: { x: number; y: number } | null = null, travelled = 0, acc = 0;
+    for (let t = 0; t <= 1; t += 0.0015) {
+      const x = w * 0.12 + t * w * 0.76;
+      const y = h / 2 + Math.sin(t * Math.PI * 2) * h * 0.2;
+      if (prev) { const d = Math.hypot(x - prev.x, y - prev.y); travelled += d; acc += d; }
+      if (prev && acc < step) continue;
+      acc = 0;
+      // simulated pressure: light at the ends, heavy through the middle
+      const pressure = 0.25 + 0.75 * Math.sin(t * Math.PI);
+      const fade = Math.min(1, t * 12, (1 - t) * 12);
+      stampDab(ctx, tip, b, { x, y, pressure: pressure * Math.max(0.3, fade), travelled, dx: prev ? x - prev.x : 1, dy: prev ? y - prev.y : 0 }, size);
+      prev = { x, y };
+    }
+    ctx.globalAlpha = 1;
+  }, [b, padColor]);
+  useEffect(() => { drawSample(); }, [drawSample, headVer]);
+  useEffect(() => { if (b.tipImage) void loadBrushHead(b.tipImage).then(() => setHeadVer((v) => v + 1)); }, [b.tipImage]);
+
+  const pickHead = (file?: File) => {
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = () => {
+      // downscale to keep saved brushes small
+      const img = new Image();
+      img.onload = () => {
+        const s = Math.min(1, 256 / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
+        c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
+        update({ tipImage: c.toDataURL('image/png') });
+      };
+      img.src = String(r.result);
+    };
+    r.readAsDataURL(file);
+  };
+
+  const saveAsNew = () => { onSave({ ...b, id: `custom-${Date.now()}`, name: b.name === brush.name ? `${b.name} copy` : b.name }); onClose(); };
+  const overwrite = () => { onSave({ ...b, id: brush.id }); onClose(); };
+  const finish = () => { if (dirty) setConfirmExit(true); else onClose(); };
 
   const clearPad = useCallback(() => {
     const ctx = padCanvasRef.current?.getContext('2d');
@@ -307,6 +360,7 @@ export function BrushStudio({ brush, onSave, onClose }: { brush: BrushDef; onSav
               className={`ap-bs-cat ${activeTab === cat.id ? 'on' : ''}`}
               onClick={() => setActiveTab(cat.id)} title={cat.name} aria-label={cat.name} aria-pressed={activeTab === cat.id}>
               <Icon size={20} />
+              <span className="ap-bs-cat-name">{cat.name}</span>
             </Button>
           );
         })}
@@ -325,7 +379,7 @@ export function BrushStudio({ brush, onSave, onClose }: { brush: BrushDef; onSav
             <Button variant="paint" size="paint" type="button" onClick={() => setShowSheet(true)} title="Drawing pad settings" aria-label="Drawing pad settings"><StrokePathIcon size={17} /></Button>
             <Button variant="paint" size="paint" type="button" onClick={clearPad} title="Clear drawing pad" aria-label="Clear drawing pad"><X size={17} /></Button>
             <Button variant="paint" size="paint" type="button" className="ap-bs-done" title="Done editing brush" aria-label="Done"
-              onClick={() => { onSave(editableBrushCopy(b)); onClose(); }}><Check size={18} strokeWidth={2.6} /></Button>
+              onClick={finish}><Check size={18} strokeWidth={2.6} /></Button>
           </div>
         </div>
 
@@ -382,6 +436,18 @@ export function BrushStudio({ brush, onSave, onClose }: { brush: BrushDef; onSav
 
           {activeTab === 'shape' && (
             <>
+              <div className="ap-bs-row ap-bs-headrow">
+                <span className="ap-bs-headbox" aria-hidden="true">
+                  <canvas ref={(c) => { if (!c) return; const x = c.getContext('2d'); if (!x) return; x.clearRect(0, 0, 72, 72); x.drawImage(brushTip(b, padColor === '#ffffff' ? '#000000' : padColor, 64), 4, 4, 64, 64); }} width={72} height={72} />
+                </span>
+                <div className="ap-bs-headcopy">
+                  <span className="ap-bs-label">Brush head</span>
+                  <span className="ap-bs-head-sub">{b.tipImage ? 'Custom image' : 'Round (built-in)'}</span>
+                </div>
+                <input ref={headInput} type="file" accept="image/*" hidden onChange={(e) => { pickHead(e.target.files?.[0]); e.target.value = ''; }} />
+                <Button variant="paint" size="paint" type="button" className="ap-bs-chip" onClick={() => headInput.current?.click()}><ImagePlus size={16} /> Import</Button>
+                {b.tipImage && <Button variant="paint" size="paint" type="button" className="ap-bs-chip" onClick={() => update({ tipImage: undefined })}><CircleDot size={16} /> Round</Button>}
+              </div>
               {slider('Scatter', (b.shapeScatter ?? b.scatter ?? 0) * 100, 0, 100, (v) => update({ shapeScatter: v / 100, scatter: v / 100 }), (v) => (v === 0 ? 'None' : `${Math.round(v)}%`))}
               {slider('Rotation', b.angle ?? 0, -180, 180, (v) => update({ angle: v, shapeRotation: v }), (v) => `${Math.round(v)}°`)}
               {slider('Count', b.shapeCount ?? 1, 1, 16, (v) => update({ shapeCount: Math.round(v) }), (v) => `${Math.round(v)}`)}
@@ -499,6 +565,19 @@ export function BrushStudio({ brush, onSave, onClose }: { brush: BrushDef; onSav
           )}
         </div>
       </div>
+
+      {confirmExit && (
+        <div className="ap-bs-sheet-backdrop" onClick={() => setConfirmExit(false)}>
+          <div className="ap-bs-sheet ap-bs-exit" role="dialog" aria-label="Save brush" onClick={(e) => e.stopPropagation()}>
+            <div className="ap-bs-grab" />
+            <div className="ap-bs-sheet-head"><h3>Save changes to “{brush.name}”?</h3></div>
+            <Button variant="paint" size="paint" type="button" className="ap-bs-action primary" onClick={saveAsNew}><Copy size={17} /> Save as new brush</Button>
+            <Button variant="paint" size="paint" type="button" className="ap-bs-action" onClick={overwrite}><Save size={17} /> Overwrite “{brush.name}”</Button>
+            <Button variant="paint" size="paint" type="button" className="ap-bs-action danger" onClick={onClose}><Trash2 size={17} /> Discard changes</Button>
+            <Button variant="paint" size="paint" type="button" className="ap-bs-action" onClick={() => setConfirmExit(false)}>Keep editing</Button>
+          </div>
+        </div>
+      )}
 
       {/* drawing pad settings sheet */}
       {showSheet && (
