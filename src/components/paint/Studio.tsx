@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Editor } from './Editor';
+import { installSuppliedLibrary } from './supplied-library';
+
+// bundled MyPaint / Deevad / JSON brush packs, sorted into library categories
+if (typeof window !== 'undefined') installSuppliedLibrary();
 import { Gallery } from './Gallery';
 import { applyTheme } from './settings';
 import { canvasToBlob, clampSize, downloadBlob, loadImage, makeId, readArtworks, removeArtwork, writeArtwork, type Artwork } from './storage';
