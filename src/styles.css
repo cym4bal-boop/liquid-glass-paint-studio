@@ -2099,3 +2099,57 @@ input[type="range"]::-moz-range-thumb { background: var(--pp-active); border: 2p
 .ap-bs-sheet-head h3 { font-size: 17px; font-weight: 800; color: var(--pp-ink); }
 .ap-bs-sheet-head button { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: var(--pp-ink); background: var(--glass-control); border: 1px solid var(--glass-line); }
 @media (max-width: 560px) { .ap-bs-panel { padding: 14px 14px 22px; } .ap-bs-slider { max-width: none; width: 100%; } .ap-bs-row { flex-wrap: wrap; } }
+
+/* ===== pass: flush palettes/history, gallery settings circle, stacks, brushes & brush editor glass ===== */
+.pp-palette-grid { display:grid !important; grid-template-columns:repeat(10,minmax(0,1fr)) !important; gap:0 !important; padding:0 !important; border-radius:16px !important; overflow:hidden !important; }
+.pp-palette-grid button, .pp-palette-grid .pp-palette-swatch { height:auto !important; min-height:0 !important; aspect-ratio:1 !important; border-radius:0 !important; border:0 !important; box-shadow:none !important; }
+.pp-palette-grid button.empty { background:color-mix(in srgb, var(--pp-ink) 8%, var(--pp-cell)) !important; border:0 !important; box-shadow:inset 0 0 0 .5px color-mix(in srgb, var(--pp-ink) 10%, transparent) !important; }
+.pp-palette.cards .pp-palette-grid { grid-template-columns:repeat(5,minmax(0,1fr)) !important; gap:6px !important; border-radius:0 !important; }
+.pp-palette.cards .pp-palette-grid button { border-radius:10px !important; aspect-ratio:3/4 !important; }
+.pp-palette { border-radius:26px !important; padding:12px 10px 10px !important; }
+.pp-palette-name input { background:color-mix(in srgb, var(--pp-ink) 7%, transparent); border-radius:6px; padding:4px 8px; }
+.pp-pal-pip, .pp-pal-more { width:40px !important; height:34px !important; border-radius:10px !important; display:grid !important; place-items:center; background:color-mix(in srgb, var(--pp-ink) 8%, transparent) !important; }
+.pp-pal-check { width:26px !important; height:26px !important; }
+.pp-history > div:last-child { display:flex !important; gap:0 !important; padding:0 !important; border-radius:14px !important; overflow:hidden !important; }
+.pp-history > div:last-child button, .pp-history-swatch { flex:1 1 0 !important; width:auto !important; min-width:0 !important; height:44px !important; border-radius:0 !important; border:0 !important; box-shadow:none !important; }
+
+/* gallery settings: same glass circle as the + button */
+.pp-button.pp-settings-btn, .pp-settings-btn { background:var(--glass-surface) !important; border:1px solid var(--glass-line) !important; border-radius:50% !important; backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturation)) !important; box-shadow:var(--glass-shadow) !important; width:48px !important; height:48px !important; }
+.pp-settings-btn svg { width:22px !important; height:22px !important; }
+
+/* stacks: no white edges; fade matches canvas corners */
+.pp-stack-sheet { border:0 !important; border-radius:8px !important; overflow:hidden !important; clip-path:inset(0 round 8px); isolation:isolate; }
+.pp-stack-sheet img { object-fit:cover !important; background:transparent !important; }
+.pp-stack-card .pp-card-shade, .pp-stack-sheet .pp-card-shade { inset:auto 0 0 0 !important; border-radius:0 0 8px 8px !important; }
+
+/* layer name marquee */
+.pp-marquee { display:block; overflow:hidden; white-space:nowrap; min-width:0; }
+.pp-marquee-inner { display:inline-block; }
+.pp-marquee.run { mask-image:linear-gradient(90deg, transparent 0, #000 6px, #000 calc(100% - 10px), transparent); }
+.pp-marquee.run .pp-marquee-inner { animation:pp-marquee linear infinite alternate; }
+@keyframes pp-marquee { 0%,15% { transform:translateX(0); } 85%,100% { transform:translateX(var(--pp-mq)); } }
+
+/* brushes window: grouped backdrops like Actions */
+.pp-brushes .pp-brush-cats, .pp-brushes .pp-brush-list { background:color-mix(in srgb, var(--glass-control) 80%, transparent); border:1px solid var(--glass-line); border-radius:22px; padding:6px; }
+.pp-brushes .pp-brush-columns { gap:8px; }
+.pp-brushes .pp-brush { border-radius:16px !important; margin-bottom:4px; background:color-mix(in srgb, var(--pp-ink) 5%, transparent) !important; }
+.pp-brushes .pp-brush-cats button { border-radius:14px !important; }
+
+/* brush editor: rounded floating glass window */
+.ap-bs { inset:10px !important; border-radius:32px; overflow:hidden; background:var(--glass-surface) !important; border:1px solid var(--glass-line); backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturation)); box-shadow:var(--glass-shadow); }
+.ap-bs-rail { background:color-mix(in srgb, var(--glass-control) 70%, transparent); border-right:1px solid var(--glass-line); }
+.ap-bs-pad { margin:10px 10px 0; border-radius:24px; overflow:hidden; border:1px solid var(--glass-line) !important; }
+.ap-bs-pill { backdrop-filter:blur(var(--glass-blur)); }
+.ap-bs-row { background:var(--glass-control); border:1px solid var(--glass-line); border-radius:16px; }
+.ap-bs-cat { position:relative; }
+.ap-bs-cat-name { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+.ap-bs .ap-bs-cat.on { background:var(--pp-active) !important; color:oklch(1 0 0) !important; box-shadow:0 4px 14px color-mix(in srgb, var(--pp-active) 50%, transparent) !important; }
+.ap-bs .ap-bs-cat.on::before { content:''; position:absolute; left:-6px; top:25%; bottom:25%; width:3px; border-radius:3px; background:var(--pp-active); }
+.ap-bs-headrow { gap:12px; align-items:center; }
+.ap-bs-headbox { width:56px; height:56px; border-radius:14px; background:var(--pp-paper); display:grid; place-items:center; flex:none; overflow:hidden; }
+.ap-bs-headbox canvas { width:48px; height:48px; }
+.ap-bs-headcopy { flex:1; display:flex; flex-direction:column; min-width:0; }
+.ap-bs-chip { display:inline-flex !important; align-items:center; gap:6px; padding:8px 12px !important; border-radius:999px !important; background:color-mix(in srgb, var(--pp-ink) 9%, transparent) !important; font-size:13px; font-weight:600; }
+.ap-bs-sheet { border-radius:28px !important; }
+.ap-bs-action { display:flex !important; align-items:center; gap:8px; }
+.ap-bs-action.danger { color:var(--destructive) !important; }
