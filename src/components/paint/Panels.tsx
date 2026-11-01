@@ -263,7 +263,7 @@ export function ActionsSheet({ onClose, onAction, guide, reference, tab, onTab, 
     Help: [[{ id: 'rename', label: 'Rename artwork' }]],
   };
   return (
-    <Sheet onClose={onClose} label="Actions" className="pp-sheet-inset pp-actions">
+    <Sheet onClose={onClose} label="Actions" className="pp-sheet-inset pp-actions" height="50dvh">
       <div className="pp-sheet-head"><h2>Actions</h2>
         <Button variant="paint" size="paint" type="button" className="pp-circle-btn" aria-label="Insert a photo" onClick={() => onAction('insert-photo')}><ImagePlus size={22} /></Button>
       </div>
@@ -275,9 +275,7 @@ export function ActionsSheet({ onClose, onAction, guide, reference, tab, onTab, 
         ))}
       </div>
       <div className="pp-sheet-scroll pp-action-list">
-        {current === 'Share' && <span className="pp-set-label pp-share-label">Share Image</span>}
         {groups[current].map((g, gi) => (<Fragment key={gi}>
-          {current === 'Share' && gi === 1 && <span className="pp-set-label pp-share-label">Share Layers</span>}
           <div key={gi} className="pp-cell-group">
             {g.map((r) => (
               <Button variant="paint" size="paint" key={r.label} type="button" className="pp-cell" role={r.toggle ? 'switch' : undefined} aria-checked={r.toggle ? !!r.on : undefined}

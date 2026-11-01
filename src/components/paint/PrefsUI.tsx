@@ -20,7 +20,7 @@ export function PrefCycle<T extends string>({ label, value, options, onChange }:
   return (
     <Button variant="paint" size="paint" type="button" className="pp-preset pp-set-row" onClick={next} aria-label={`${label}: ${value}. Tap to change.`}>
       <span className="pp-preset-name">{label}</span>
-      <span className="pp-set-pill">{value}<em>▼</em></span>
+      <span className="pp-set-pill">{value}</span>
     </Button>
   );
 }
@@ -61,10 +61,7 @@ export function CurveGraph({ label, kind, onChange }: { label: string; kind: Cur
 
 export function PrefSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <>
-      <span className="pp-set-label">{label}</span>
-      <div className="pp-group">{children}</div>
-    </>
+    <div className="pp-group" aria-label={label}>{children}</div>
   );
 }
 

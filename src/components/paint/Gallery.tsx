@@ -553,7 +553,7 @@ function SettingsSheet({ onClose, dark, onDark, accent, onAccent, frost, onFrost
           <PrefToggle label="Dark mode" on={dark} onChange={onDark} />
           <PrefToggle label="frost" on={frost} onChange={onFrost} />
         </PrefSection>
-        <span className="pp-set-label">Accent color</span>
+        
         <div className="pp-group pp-set-accent">
           <div className="pp-accent-swatches">
             {accentOptions().map((c) => (
