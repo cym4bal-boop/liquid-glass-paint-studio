@@ -2153,3 +2153,4 @@ input[type="range"]::-moz-range-thumb { background: var(--pp-active); border: 2p
 .ap-bs-sheet { border-radius:28px !important; }
 .ap-bs-action { display:flex !important; align-items:center; gap:8px; }
 .ap-bs-action.danger { color:var(--destructive) !important; }
+.pp-button.pp-settings-btn, .pp-button.pp-dock-round:not(.pp-dock-done) { background:var(--glass-surface, var(--pp-glass, var(--pp-sheet))) !important; background-color:color-mix(in srgb, var(--pp-paper) 88%, transparent) !important; }
