@@ -55,7 +55,7 @@ export function installSuppliedLibrary() {
       const pack = PACKS[parts[1] ?? ''] ?? { label: 'MyPaint' };
       const brush = translateMyPaintBrush({ ...preset.data, parent_brush_name: '' }, file);
       const base = pretty(file);
-      brushLibrary.push({ ...brush, id, name: `${base} · ${pack.label}`, author: pack.author, category: categorizeSupplied(base) });
+      brushLibrary.push({ ...brush, id, name: `${base} · ${pack.label}`, ...(pack.author ? { author: pack.author } : {}), category: categorizeSupplied(base) });
     } else {
       const brush = translateCustomJsonBrush(preset.data, file);
       brushLibrary.push({ ...brush, id, category: categorizeSupplied(brush.name || file) });

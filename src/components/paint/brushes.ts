@@ -29,7 +29,7 @@ export type BrushDef = {
 
   // 4. Shape
   /** Custom brush head (shape) image as a data URL; dark or opaque pixels paint. */
-  tipImage?: string;
+  tipImage?: string | undefined;
   hardness: number; // 0 soft – 1 hard
   roundness: number; // 1 round, <1 flattened
   angle: number; // tip angle in degrees
